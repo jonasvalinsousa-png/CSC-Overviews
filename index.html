@@ -1,0 +1,238 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Relatório Operacional Dinâmico</title>
+  <style>
+    :root { --brand-primary:#AB4807; --brand-secondary:#056D73; --bg-body:#f9f9f9; --bg-card:#ffffff; --text-main:#000000; --text-muted:#999999; --border-soft:#dddddd; --border-form:#cccccc; --bg-attention:#fff3e0; }
+    html{box-sizing:border-box}*,*::before,*::after{box-sizing:inherit}
+    body{font-family:Arial,Helvetica,sans-serif;color:var(--text-main);margin:0;background-color:var(--bg-body);line-height:1.35}
+    .container{width:100%;max-width:960px;margin:16px auto;background:var(--bg-card);border:1px solid var(--border-soft);border-radius:12px;padding:16px}
+    .header{text-align:center;border-bottom:4px solid #AB4807;padding-bottom:8px;margin-bottom:16px}
+    .header h2{color:#AB4807;font-size:22px;margin:0}
+    .section{margin-bottom:16px}
+    .section h3{font-size:18px;margin-bottom:8px;color:#056D73}
+    ul{margin:0;padding-left:20px}
+    li{margin-bottom:6px;font-size:15px}
+    .highlight{font-weight:bold;color:#000000}
+    .placeholder{color:#999999;font-style:italic}
+    .attention{background-color:#fff3e0;border-left:6px solid #AB4807;padding:10px;border-radius:8px;}
+    .form-container{margin-top:16px;border:1px solid #ccc;border-radius:6px;padding:10px;background-color:#f4f4f4}
+    .scroll-box{max-height:360px;overflow-y:auto;padding-right:8px}
+    form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width:640px){form{grid-template-columns:1fr}}
+    .group-title{grid-column:1/-1;font-weight:bold;color:#AB4807;margin-top:10px}
+    input,textarea{padding:8px;border:1px solid #ccc;border-radius:6px;width:100%}
+    textarea{min-height:90px;resize:vertical}
+    .char-counter{grid-column:1/-1;text-align:right;font-size:12px;color:#666;margin-top:-4px}
+    .update-btn{grid-column:1/-1;padding:10px;background-color:#056D73;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:16px}
+    .update-btn:hover{background-color:#045860}
+    .legend{margin:8px 0 0;color:#555;font-size:13px}
+    .legend b{color:#056D73}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2 id="titulo">Overview Operacional - Qualidade (Dia Atual)</h2>
+      <div class="legend">
+        <b>Legenda rápida:</b> <br/>
+        Absenteísmo = presença e ausências do time; Percentuais = indicadores (% inconformidade, % avarias); Entrada = peças recebidas; Produção/Produtividade = HC (headcount), Meta, Capacidade por etapa; Backlog = remessas/peças pendentes; Pontos de Atenção = riscos e oportunidades do dia.
+      </div>
+    </div>
+
+    <div id="relatorio">
+      <div class="section">
+        <h3>Absenteísmo</h3>
+        <ul>
+          <li><span class="highlight">Presentes:</span> <span id="rPresentes" class="placeholder">__</span> colaboradores</li>
+          <li><span class="highlight">Faltas/Ausências:</span> <span id="rFaltas" class="placeholder">__</span></li>
+        </ul>
+      </div>
+      <div class="section">
+        <h3>Percentuais</h3>
+        <ul>
+          <li>% de Inconformidade da In Loco (Diário): <span id="rInconformidade" class="placeholder">__</span></li>
+          <li>% Avarias encontradas na Manipulação (Mensal): <span id="rAvarias" class="placeholder">__</span></li>
+        </ul>
+      </div>
+      <div class="section">
+        <h3>Entrada</h3>
+        <ul>
+          <li>Planilhamento: <span id="rPlanilhamento" class="placeholder">__</span> peças</li>
+          <li>1ª Expedição: <span id="rExpedicao" class="placeholder">__</span> peças</li>
+        </ul>
+      </div>
+      <div class="section">
+        <h3>Produção / Produtividade</h3>
+        <ul>
+          <li>Planilhamento: HC: <span id="rHCPlan" class="placeholder">__</span> | Meta: <span id="rMetaPlan" class="placeholder">__</span> | Capacidade: <span id="rCapPlan" class="placeholder">__</span></li>
+          <li>In Loco: HC: <span id="rHCInLoco" class="placeholder">__</span> | Meta: <span id="rMetaInLoco" class="placeholder">__</span> | Capacidade: <span id="rCapInLoco" class="placeholder">__</span></li>
+          <li>Preventiva: HC: <span id="rHCPrev" class="placeholder">__</span> | Meta: <span id="rMetaPrev" class="placeholder">__</span> | Capacidade: <span id="rCapPrev" class="placeholder">__</span></li>
+          <li>1ª Expedição: HC: <span id="rHCExp" class="placeholder">__</span> | Meta: <span id="rMetaExp" class="placeholder">__</span> | Capacidade: <span id="rCapExp" class="placeholder">__</span></li>
+        </ul>
+      </div>
+      <div class="section">
+        <h3>Backlog</h3>
+        <ul>
+          <li>In Loco: Remessas pendentes inspeção: <span id="rRemInLoco" class="placeholder">__</span> | Peças pendentes inspeção: <span id="rPecasInLoco" class="placeholder">__</span></li>
+          <li>Planilhamento: Remessas pendentes: <span id="rRemPlan" class="placeholder">__</span> | Peças pendentes: <span id="rPecasPlan" class="placeholder">__</span></li>
+          <li>1ª Expedição: Peças pendentes: <span id="rPecasExp" class="placeholder">__</span></li>
+        </ul>
+      </div>
+      <div class="attention">
+        <h3>Pontos de Atenção (Oportunidades / Ofensores / Pontos Críticos)</h3>
+        <p id="rPontos" class="placeholder">__</p>
+      </div>
+    </div>
+
+    <div class="form-container">
+      <h3>Atualizar Dados</h3>
+      <div class="scroll-box">
+        <form id="dataForm">
+          <div class="group-title">Absenteísmo</div>
+          <input type="number" id="presentes" placeholder="Presentes" />
+          <input type="text" id="faltas" placeholder="Faltas/Ausências" />
+
+          <div class="group-title">Percentuais</div>
+          <input type="number" id="inconformidade" placeholder="% Inconformidade In Loco" />
+          <input type="number" id="avarias" placeholder="% Avarias" />
+
+          <div class="group-title">Entrada</div>
+          <input type="number" id="planilhamento" placeholder="Planilhamento (peças)" />
+          <input type="number" id="expedicao" placeholder="1ª Expedição (peças)" />
+
+          <div class="group-title">Produção / Produtividade</div>
+          <input type="number" id="hcPlan" placeholder="HC Planilhamento" />
+          <input type="number" id="metaPlan" placeholder="Meta Planilhamento" />
+          <input type="number" id="capPlan" placeholder="Capacidade Planilhamento" />
+          <input type="number" id="hcInLoco" placeholder="HC In Loco" />
+          <input type="number" id="metaInLoco" placeholder="Meta In Loco" />
+          <input type="number" id="capInLoco" placeholder="Capacidade In Loco" />
+          <input type="number" id="hcPrev" placeholder="HC Preventiva" />
+          <input type="number" id="metaPrev" placeholder="Meta Preventiva" />
+          <input type="number" id="capPrev" placeholder="Capacidade Preventiva" />
+          <input type="number" id="hcExp" placeholder="HC 1ª Expedição" />
+          <input type="number" id="metaExp" placeholder="Meta 1ª Expedição" />
+          <input type="number" id="capExp" placeholder="Capacidade 1ª Expedição" />
+
+          <div class="group-title">Backlog</div>
+          <input type="number" id="remInLoco" placeholder="Remessas pendentes In Loco" />
+          <input type="number" id="pecasInLoco" placeholder="Peças pendentes In Loco" />
+          <input type="number" id="remPlan" placeholder="Remessas pendentes Planilhamento" />
+          <input type="number" id="pecasPlan" placeholder="Peças pendentes Planilhamento" />
+          <input type="number" id="pecasExp" placeholder="Peças pendentes 1ª Expedição" />
+
+          <div class="group-title">Pontos de Atenção</div>
+          <textarea id="pontos" placeholder="Pontos de Atenção"></textarea>
+          <div id="pontosCounter" class="char-counter">0 / 600</div>
+        </form>
+      </div>
+      <button class="update-btn" type="button" onclick="atualizarRelatorio()">Atualizar</button>
+      <button class="update-btn" type="button" onclick="enviarRelatorio()">Enviar</button>
+    </div>
+  </div>
+
+  <script>
+    const MAX_PONTOS = 600;
+    function configurarLimitePontos(){
+      const ta = document.getElementById('pontos');
+      const counter = document.getElementById('pontosCounter');
+      ta.setAttribute('maxlength', MAX_PONTOS);
+      const atualizarContador = () => { counter.textContent = `${ta.value.length} / ${MAX_PONTOS}`; };
+      ta.addEventListener('input', atualizarContador); atualizarContador();
+    }
+    function atualizarTitulo(){
+      const titulo = document.getElementById('titulo');
+      const agora = new Date();
+      const dia = String(agora.getDate()).padStart(2, '0');
+      const mes = String(agora.getMonth() + 1).padStart(2, '0');
+      const ano = agora.getFullYear();
+      const hora = String(agora.getHours()).padStart(2, '0');
+      const minuto = String(agora.getMinutes()).padStart(2, '0');
+      const dataHora = `${dia}/${mes}/${ano} - ${hora}:${minuto}`;
+      titulo.innerText = `Overview Operacional - Qualidade (${dataHora})`;
+    }
+    function setTextSutil(id, valor){
+      const el = document.getElementById(id);
+      if (valor && valor.trim() !== '') {
+        el.textContent = valor;
+        el.classList.remove('placeholder');
+      } else {
+        el.textContent = '__';
+        el.classList.add('placeholder');
+      }
+    }
+    function atualizarRelatorio(){
+      setTextSutil('rPresentes', document.getElementById('presentes').value);
+      setTextSutil('rFaltas', document.getElementById('faltas').value);
+      const incon = document.getElementById('inconformidade').value;
+      setTextSutil('rInconformidade', incon ? (incon + '%') : '');
+      const av = document.getElementById('avarias').value;
+      setTextSutil('rAvarias', av ? (av + '%') : '');
+      setTextSutil('rPlanilhamento', document.getElementById('planilhamento').value);
+      setTextSutil('rExpedicao', document.getElementById('expedicao').value);
+      setTextSutil('rHCPlan', document.getElementById('hcPlan').value);
+      setTextSutil('rMetaPlan', document.getElementById('metaPlan').value);
+      setTextSutil('rCapPlan', document.getElementById('capPlan').value);
+      setTextSutil('rHCInLoco', document.getElementById('hcInLoco').value);
+      setTextSutil('rMetaInLoco', document.getElementById('metaInLoco').value);
+      setTextSutil('rCapInLoco', document.getElementById('capInLoco').value);
+      setTextSutil('rHCPrev', document.getElementById('hcPrev').value);
+      setTextSutil('rMetaPrev', document.getElementById('metaPrev').value);
+      setTextSutil('rCapPrev', document.getElementById('capPrev').value);
+      setTextSutil('rHCExp', document.getElementById('hcExp').value);
+      setTextSutil('rMetaExp', document.getElementById('metaExp').value);
+      setTextSutil('rCapExp', document.getElementById('capExp').value);
+      setTextSutil('rRemInLoco', document.getElementById('remInLoco').value);
+      setTextSutil('rPecasInLoco', document.getElementById('pecasInLoco').value);
+      setTextSutil('rRemPlan', document.getElementById('remPlan').value);
+      setTextSutil('rPecasPlan', document.getElementById('pecasPlan').value);
+      setTextSutil('rPecasExp', document.getElementById('pecasExp').value);
+      setTextSutil('rPontos', document.getElementById('pontos').value);
+    }
+    async function enviarRelatorio(){
+      const payload = {
+        autor: '',
+        presentes: document.getElementById('presentes').value,
+        faltas: document.getElementById('faltas').value,
+        inconformidade: document.getElementById('inconformidade').value,
+        avarias: document.getElementById('avarias').value,
+        planilhamento: document.getElementById('planilhamento').value,
+        expedicao: document.getElementById('expedicao').value,
+        hcPlan: document.getElementById('hcPlan').value,
+        metaPlan: document.getElementById('metaPlan').value,
+        capPlan: document.getElementById('capPlan').value,
+        hcInLoco: document.getElementById('hcInLoco').value,
+        metaInLoco: document.getElementById('metaInLoco').value,
+        capInLoco: document.getElementById('capInLoco').value,
+        hcPrev: document.getElementById('hcPrev').value,
+        metaPrev: document.getElementById('metaPrev').value,
+        capPrev: document.getElementById('capPrev').value,
+        hcExp: document.getElementById('hcExp').value,
+        metaExp: document.getElementById('metaExp').value,
+        capExp: document.getElementById('capExp').value,
+        remInLoco: document.getElementById('remInLoco').value,
+        pecasInLoco: document.getElementById('pecasInLoco').value,
+        remPlan: document.getElementById('remPlan').value,
+        pecasPlan: document.getElementById('pecasPlan').value,
+        pecasExp: document.getElementById('pecasExp').value,
+        pontos: document.getElementById('pontos').value
+      };
+      try {
+        const resp = await fetch('/api/relatorios', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': 'troque-este-segredo' },
+          body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+        if (resp.ok) alert('Relatório enviado! ID: ' + data.id);
+        else alert('Falha ao enviar: ' + (data.error || 'erro'));
+      } catch(e){ alert('Erro de rede: ' + e.message); }
+    }
+    atualizarTitulo(); setInterval(atualizarTitulo, 60000); configurarLimitePontos();
+  </script>
+</body>
+</html>

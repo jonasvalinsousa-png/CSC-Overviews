@@ -1,0 +1,20 @@
+
+CREATE TABLE IF NOT EXISTS relatorios (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  criado_em TEXT NOT NULL,
+  autor TEXT,
+  presentes INTEGER,
+  faltas TEXT,
+  inconformidade REAL,
+  avarias REAL,
+  planilhamento INTEGER,
+  expedicao INTEGER,
+  hc_plan INTEGER, meta_plan INTEGER, cap_plan INTEGER,
+  hc_inloco INTEGER, meta_inloco INTEGER, cap_inloco INTEGER,
+  hc_prev INTEGER, meta_prev INTEGER, cap_prev INTEGER,
+  hc_exp INTEGER, meta_exp INTEGER, cap_exp INTEGER,
+  rem_inloco INTEGER, pecas_inloco INTEGER,
+  rem_plan INTEGER, pecas_plan INTEGER,
+  pecas_exp INTEGER,
+  pontos TEXT
+);
